@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <title>AR Business Card - Marker Based</title>
+
+    <!-- A-Frame (The 3D engine) -->
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+
+    <!-- AR.js (The Computer Vision library for tracking) -->
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+    <style>
+        /* Reset and full screen */
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* Loading overlay */
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-family: sans-serif;
+            z-index: 10;
+            pointer-events: none;
+            /* Let clicks pass through if needed */
+            text-align: center;
+        }
+
+        .instructions {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Instructions Overlay -->
+    <div id="overlay">
+        <h1>AR Active</h1>
+        <div class="instructions">
+            <p>Point your camera at the <b>Hiro Marker</b></p>
+            <small>(Or your business card if configured)</small>
+        </div>
+    </div>
+
+    <!-- 
+        A-Frame Scene 
+        embedded: Integrated into the page
+        arjs: Configures the webcam tracking
+        vr-mode-ui="enabled: false": Hides the VR goggle button
+    -->
+    <a-scene embedded
+        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+        vr-mode-ui="enabled: false">
+
+        <!-- ASSETS: Preload your models here -->
+        <a-assets>
+            <!-- We use the same robot model -->
+            <a-asset-item id="robot-model"
+                src="https://raw.githubusercontent.com/google/model-viewer/master/packages/shared-assets/models/RobotExpressive.glb"></a-asset-item>
+        </a-assets>
+
+        <!-- 
+            MARKER: This is what the camera looks for.
+            preset="hiro": Uses the standard Hiro marker.
+            
+            To use your OWN QR code or image as a marker:
+            1. Generate a pattern file (.patt) from your image using AR.js Marker Trainer.
+            2. Change this line to: <a-marker type="pattern" url="pattern-marker.patt">
+        -->
+        <a-marker preset="hiro">
+
+            <!-- THE 3D MODEL -->
+            <!-- 
+                position: x y z (0 0 0 is center of marker)
+                scale: Resize to fit the marker
+                rotation: -90 0 0 usually makes it stand up flat on the paper
+            -->
+            <a-entity gltf-model="#robot-model" scale="0.2 0.2 0.2" position="0 0 0" rotation="0 0 0" animation-mixer>
+            </a-entity>
+
+            <!-- Optional: Text floating above the model -->
+            <a-entity text="value: Alex Designer; color: #F0F; align: center; width: 5;" position="0 1.5 0"
+                rotation="-90 0 0">
+            </a-entity>
+
+        </a-marker>
+
+        <!-- CAMERA -->
+        <a-entity camera></a-entity>
+
+    </a-scene>
+
+    <!-- Script to hide overlay when marker is found (Optional polish) -->
+    <script>
+        const marker = document.querySelector("a-marker");
+        const overlay = document.querySelector("#overlay");
+
+        marker.addEventListener('markerFound', () => {
+            overlay.style.display = 'none';
+        });
+
+        marker.addEventListener('markerLost', () => {
+            overlay.style.display = 'flex';
+        });
+    </script>
+</body>
+
+</html>
